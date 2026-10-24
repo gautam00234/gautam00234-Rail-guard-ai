@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 import time
 from uuid import uuid4
@@ -15,6 +16,7 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 STATIC_DIR = BASE_DIR / "app" / "static"
 UPLOAD_DIR = BASE_DIR / "data" / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="RailGuard AI", version="0.1.0")
 # Allow the dashboard to call the local API when index.html is opened directly
@@ -28,16 +30,18 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-# def _remove_upload(path: Path) -> None:
-#     """Delete after OpenCV has released Windows' transient video-file lock."""
-#     time.sleep(2)
-#     for _ in range(20):
-#         try:
-#             path.unlink(missing_ok=True)
-#             return
-#         except OSError:
-#             # Cleanup must never turn an analysis result into an API failure.
-#             time.sleep(0.5)
+def _remove_upload(path: Path) -> None:
+    """Delete after OpenCV has released Windows' transient video-file lock."""
+    time.sleep(2)
+    for attempt in range(20):
+        try:
+            path.unlink(missing_ok=True)
+            return
+        except OSError as error:
+            if attempt == 19:
+                logger.warning("Could not remove temporary upload %s: %s", path, error)
+                return
+            time.sleep(0.5)
 
 
 @app.exception_handler(Exception)
