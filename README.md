@@ -5,7 +5,7 @@ RailGuard AI is a college-project prototype that analyses recorded station video
 - pedestrian crowd density; and
 - movement within a configurable track-exclusion band at the bottom of the video.
 
-It uses OpenCV's bundled HOG pedestrian detector, so it can run without downloading a large AI model. This is useful for a quick demo, but it is not sufficiently accurate or safety-certified for real railway operation.
+It uses YOLO11n, a pretrained deep-learning person detector, plus OpenCV video processing. A small Kaggle pedestrian dataset is included through a reproducible conversion script for future fine-tuning. This is a working academic prototype, not a safety-certified railway system.
 
 ## Run locally
 
@@ -36,3 +36,19 @@ After the first setup, the shortest way to launch it is:
 ## Important prototype limits
 
 The lowermost 18% of every uploaded frame is treated as the track area. This is a visual demo assumption, not actual track recognition. Before any production setting, use authorized cameras, define camera-specific safe zones, validate performance across lighting/crowd conditions, protect video data, and retain trained human control over every safety decision.
+
+## Dataset and training evidence
+
+The downloaded Kaggle pedestrian dataset is converted into 187 labelled person frames: 148 training and 39 validation frames. The CSV-to-YOLO conversion is reproducible:
+
+```powershell
+python training\convert_kaggle_pedestrian.py --sample-every 8
+```
+
+To fine-tune later on a GPU-enabled Python environment, run:
+
+```powershell
+.\training\train_kaggle_pedestrian.ps1 -Epochs 10
+```
+
+The dashboard currently uses the included pretrained `models/yolo11n.pt` baseline. Do not claim a fine-tuning accuracy value until a run completes and produces `results.csv`.

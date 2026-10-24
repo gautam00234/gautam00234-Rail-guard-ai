@@ -6,6 +6,10 @@ __pycache__/
 
 # Uploaded footage is temporary and may contain sensitive video data
 data/uploads/
+datasets/
+runs/
+models/*.pt
+.pip-temp/
 
 # Editor and operating-system files
 .vscode/
